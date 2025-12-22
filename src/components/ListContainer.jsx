@@ -5,6 +5,7 @@ import PendingRequestList from './PendingRequestList'
 import ChatList from './ChatList'
 import PublicGroupList from './PublicGroupList'
 import GroupList from './GroupList'
+import CreateGroup from './CreateGroup'
 
 const ListContainer = () => {
     const currentList=useAuthStore((state)=>state.currentList)
@@ -27,6 +28,10 @@ const ListContainer = () => {
 
     if(currentList==="publicGroups"){
         return <PublicGroupList/>    
+    }
+
+    if(currentList==="createGroup"){
+        return <CreateGroup/>    
     }
 }
 

@@ -12,6 +12,7 @@ const CurrentListToggle = () => {
         <div className='bg-gray-400 rounded-4xl cursor-pointer border px-2 py-1' onClick={() => setCurrentList("chatList")}>ChatList</div>
         <div className='bg-gray-400 rounded-4xl cursor-pointer border px-2 py-1' onClick={() => setCurrentList("groups")}>Groups</div>
         <div className='bg-gray-400 rounded-4xl cursor-pointer border px-2 py-1' onClick={() => setCurrentList("publicGroups")}>Public Group Chats</div>
+        <div className='bg-gray-400 rounded-4xl cursor-pointer border px-2 py-1' onClick={() => setCurrentList("createGroup")}>Create Group</div>
     </div>
   )
 }

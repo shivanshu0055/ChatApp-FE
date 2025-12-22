@@ -25,8 +25,8 @@ const SearchBar = () => {
 
     return(
         <>
-        <div className='flex gap-4 w-fit mx-auto my-7'>
-            <input placeholder='Search for users and groups' type="text" className='border rounded-4xl w-80 px-2 text-sm'  onChange={(e)=>setQuery(e.target.value)}/>
+        <div className='flex gap-4 w-fit mx-auto '>
+            <input placeholder='Search for users ' type="text" className='border rounded-4xl w-80 px-2 text-sm'  onChange={(e)=>setQuery(e.target.value)}/>
             <button className='bg-black rounded-4xl text-white px-4 py-1' 
                 onClick={()=>{
                 if (!query?.trim()) return;

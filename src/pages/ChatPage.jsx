@@ -50,6 +50,11 @@ const ChatPage = () => {
       queryClient.invalidateQueries({ queryKey: ['messages', chatID] })
     })
 
+    newSocket.on('message-deleted', (data) => {
+      console.log('Message deleted:', data)
+      queryClient.invalidateQueries({ queryKey: ['messages', chatID] })
+    })
+
     return () => {
       newSocket.disconnect()
     }
@@ -75,6 +80,22 @@ const ChatPage = () => {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight
     }
   }, [allMessages])
+
+  const deleteMessage = async (messageID) => {
+    try {
+      await axios.post(`http://localhost:3000/api/message/deleteMessage/${messageID}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+
+      // Emit to socket
+      socket.emit('delete-message', { chatID, messageID })
+
+      // Refetch messages
+      queryClient.invalidateQueries({ queryKey: ['messages', chatID] })
+    } catch (err) {
+      console.error('Error deleting message:', err)
+    }
+  }
 
   const sendMessage = async () => {
     if (!messageInput.trim()) return
@@ -113,8 +134,16 @@ const ChatPage = () => {
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4">
         {isFetchingNextPage && <div className="p-2 text-center">Loading more messages...</div>}
         {allMessages.map(message => (
-          <div key={message._id} className="message mb-2 p-2 bg-white rounded shadow">
+          <div key={message._id} className="message mb-2 p-2 bg-white rounded shadow relative">
             <strong>{message.sender.username}:</strong> {message.content}
+            {message.sender._id === userID && message.content !== "This message is deleted" && (
+              <button
+                onClick={() => deleteMessage(message._id)}
+                className="absolute top-1 right-1 text-red-500 hover:text-red-700"
+              >
+                Delete
+              </button>
+            )}
           </div>
         ))}
       </div>

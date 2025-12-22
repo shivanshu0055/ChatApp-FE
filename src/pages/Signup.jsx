@@ -51,20 +51,20 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
-        <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">
+    <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] font-Geist text-white">
+      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8 text-[#0a0a0a]">
+        <h2 className="text-2xl font-semibold mb-6">
           Sign Up
         </h2>
 
         {error && (
-          <div className="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-2 text-sm text-red-700">
+          <div className="mb-4 rounded-md bg-red-900 border border-red-700 px-4 py-2 text-sm text-red-200">
             {error}
           </div>
         )}
 
         {success && (
-          <div className="mb-4 rounded-md bg-green-50 border border-green-200 px-4 py-2 text-sm text-green-700">
+          <div className="mb-4 rounded-md bg-green-900 border border-green-700 px-4 py-2 text-sm text-green-200">
             {success}
           </div>
         )}
@@ -73,7 +73,7 @@ const Signup = () => {
           <div>
             <label
               htmlFor="username"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-medium text-[#0a0a0a]/60 mb-1"
             >
               Username
             </label>
@@ -82,7 +82,7 @@ const Signup = () => {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              className="block w-full rounded-md border border-gray-600 px-3 py-2 text-[#0a0a0a]/60 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               placeholder="Enter your username"
               autoComplete="username"
             />
@@ -91,7 +91,7 @@ const Signup = () => {
           <div>
             <label
               htmlFor="password"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-medium text-[#0a0a0a]/60 mb-1"
             >
               Password
             </label>
@@ -100,7 +100,7 @@ const Signup = () => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              className="block w-full rounded-md border text-[#0a0a0a]/60 border-gray-600 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               placeholder="Enter your password"
               autoComplete="new-password"
             />
@@ -109,7 +109,7 @@ const Signup = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex justify-center items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full cursor-pointer flex justify-center items-center  bg-[#0a0a0a] px-4 py-2 text-sm font-semibold text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed rounded-lg mt-6"
           >
             {loading ? 'Signing up...' : 'SIGNUP'}
           </button>
