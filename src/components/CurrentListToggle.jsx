@@ -4,15 +4,16 @@ import { useAuthStore } from '../stores/authStore'
 const CurrentListToggle = () => {
 
     const setCurrentList=useAuthStore((state)=>state.setCurrentList)
+    const currentList=useAuthStore((state)=>state.currentList)
 
   return (
-    <div className='flex justify-center gap-10 my-4'>
-        <div className='bg-gray-400 rounded-4xl cursor-pointer border px-2 py-1' onClick={() => setCurrentList("friends")}>Friends</div>
-        <div className='bg-gray-400 rounded-4xl cursor-pointer border px-2 py-1' onClick={() => setCurrentList("pending")}>Pending Requests</div>
-        <div className='bg-gray-400 rounded-4xl cursor-pointer border px-2 py-1' onClick={() => setCurrentList("chatList")}>ChatList</div>
-        <div className='bg-gray-400 rounded-4xl cursor-pointer border px-2 py-1' onClick={() => setCurrentList("groups")}>Groups</div>
-        <div className='bg-gray-400 rounded-4xl cursor-pointer border px-2 py-1' onClick={() => setCurrentList("publicGroups")}>Public Group Chats</div>
-        <div className='bg-gray-400 rounded-4xl cursor-pointer border px-2 py-1' onClick={() => setCurrentList("createGroup")}>Create Group</div>
+    <div className='flex bg-white py-1 px-2 w-fit mx-auto rounded-2xl justify-center gap-3 my-6 font-Geist'>
+        <div className={`text-sm rounded-xl cursor-pointer border-2 border-gray-300 px-2 py-1 ${currentList === "friends" ? "bg-black text-white" : "bg-white/90 text-black"}`} onClick={() => setCurrentList("friends")}>Friends</div>
+        <div className={`text-sm rounded-xl cursor-pointer border-2 border-gray-300 px-2 py-1 ${currentList === "pending" ? "bg-black text-white" : "bg-white/90 text-black"}`} onClick={() => setCurrentList("pending")}>Requests</div>
+        <div className={`text-sm rounded-xl cursor-pointer border-2 border-gray-300 px-2 py-1 ${currentList === "chatList" ? "bg-black text-white" : "bg-white/90 text-black"}`} onClick={() => setCurrentList("chatList")}>ChatList</div>
+        <div className={`text-sm rounded-xl cursor-pointer border-2 border-gray-300 px-2 py-1 ${currentList === "groups" ? "bg-black text-white" : "bg-white/90 text-black"}`} onClick={() => setCurrentList("groups")}>Groups</div>
+        <div className={`text-sm rounded-xl cursor-pointer border-2 border-gray-300 px-2 py-1 ${currentList === "publicGroups" ? "bg-black text-white" : "bg-white/90 text-black"}`} onClick={() => setCurrentList("publicGroups")}>Public Groups</div>
+        <div className={`text-sm rounded-xl cursor-pointer border-2 border-gray-300 px-2 py-1 ${currentList === "createGroup" ? "bg-black text-white" : "bg-white/90 text-black"}`} onClick={() => setCurrentList("createGroup")}>Create Group</div>
     </div>
   )
 }

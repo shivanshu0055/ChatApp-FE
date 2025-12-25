@@ -2,6 +2,8 @@ import React from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../stores/authStore';
 import axios from 'axios';
+import { TiTickOutline } from "react-icons/ti";
+import { CiNoWaitingSign } from "react-icons/ci";
 
 const PendingRequestCard = ({senderID,receiverID,requestID,status,senderUsername}) => {
     
@@ -41,27 +43,25 @@ const PendingRequestCard = ({senderID,receiverID,requestID,status,senderUsername
     });
 
     return (
-        <>
-            
-                <div className='flex justify-between px-2 py-3 border-2'>
+        <>  
+                <div className='border-2 border-gray-300 bg-white text-black w-full px-3 py-1.5 rounded-lg my-1 hover:bg-black hover:text-white text-left transition-all duration-300 ease-in-out flex justify-between items-center'>
                     <div>
                         <div>{senderUsername}</div>
-                        <div>{senderID}</div>
                     </div>
-                    <div>
+                    <div className='flex items-center gap-2'>
                         <button 
-                            className='bg-green-400 px-2 py-1 rounded-2xl mx-2'
+                            className='bg-green-400 px-2 py-1 rounded-xl cursor-pointer'
                             onClick={() => acceptMutation.mutate()}
                             disabled={acceptMutation.isPending}
                         >
-                            {acceptMutation.isPending ? 'Accepting...' : 'Accept'}
+                            <TiTickOutline className='text-xl'></TiTickOutline>
                         </button>
                         <button 
-                            className='bg-red-400 px-2 py-1 rounded-2xl mx-2'
+                            className='bg-red-400 px-2 py-1 rounded-xl cursor-pointer'
                             onClick={() => declineMutation.mutate()}
                             disabled={declineMutation.isPending}
                         >
-                            {declineMutation.isPending ? 'Declining...' : 'Decline'}
+                            <CiNoWaitingSign className='text-xl'></CiNoWaitingSign>
                         </button>
                     </div>
                 </div> 

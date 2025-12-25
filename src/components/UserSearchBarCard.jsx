@@ -29,11 +29,12 @@ const UserSearchBarCard = ({username,userID,sentRequests,receivedRequests,friend
           Authorization:`Bearer ${token}`
         }
       })
+      toast.success("Friend request sent")
       setAlreadySent(true)
   }
 
   return (
-    <div className='px-3 py-1 border-blue-300 flex justify-between bg-gray-300 rounded-3xl'>
+    <div className=' hover:bg-black hover:text-white text-left transition-all duration-200 ease-in-out max-h-80 px-3 py-1 flex justify-between bg-white border border-gray-400 rounded-xl my-2 text-black items-center font-light'>
       <div>{username}</div>
       <div onClick={sendFriendRequest} className={`cursor-pointer w-fit rounded-full ${alreadySent || alreadyFriends ? 'bg-gray-500' : 'bg-green-500'} px-3`}>
         +

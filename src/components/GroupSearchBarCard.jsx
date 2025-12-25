@@ -30,9 +30,9 @@ const GroupSearchBarCard = ({ groupName, _id }) => {
   }
 
   return (
-    <div className='px-3 py-1 border-blue-300 flex justify-between bg-gray-300 rounded-3xl'>
+    <div className=' hover:bg-black hover:text-white text-left transition-all duration-200 ease-in-out max-h-80 px-3 py-1 flex justify-between bg-white border border-gray-400 rounded-xl my-2 text-black items-center font-normal'>
       <div>{groupName}</div>
-      <div onClick={handleJoin} className={`cursor-pointer w-fit rounded-full ${joined ? 'bg-gray-500' : 'bg-green-500'} px-3`}>
+      <div onClick={handleJoin} className={`text-white font-semibold cursor-pointer w-fit rounded-sm ${joined ? 'bg-gray-500' : 'bg-green-500'} px-3`}>
         {joined ? 'Joined' : 'Join'}
       </div>
     </div>

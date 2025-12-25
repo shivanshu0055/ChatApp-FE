@@ -6,7 +6,7 @@ import { useAuthStore } from '../stores/authStore'
 import { useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
 
-const FriendCard = ({userID,username}) => {
+  const FriendCard = ({userID,username}) => {
   const token=useAuthStore(state=>state.token);
   const navigate=useNavigate()
 
@@ -29,10 +29,11 @@ const FriendCard = ({userID,username}) => {
   if(isError) return <p>Error: {error.message}</p>
 
   return (
-    <div onClick={mutate} className='bg-blue-300 w-fit px-3 py-1 rounded-2xl my-1 mx-auto cursor-pointer'>
+    <div onClick={mutate} className='border-2 border-gray-300 bg-white text-black w-full px-3 py-2 rounded-lg my-1 cursor-pointer hover:bg-black hover:text-white text-left transition-all duration-300 ease-in-out'>
         {username}
     </div>
   )
 }
 
 export default FriendCard
+

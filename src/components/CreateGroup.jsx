@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useAuthStore } from '../stores/authStore'
 import axios from 'axios'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'react-toastify'
 
 const CreateGroup = () => {
   const { token } = useAuthStore()
@@ -15,10 +16,10 @@ const CreateGroup = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['groups'] })
       setGroupName('')
-      alert('Group created successfully!')
+      toast.success('Group created successfully!')
     },
     onError: (error) => {
-      alert('Error creating group: ' + error.message)
+      toast.error('Error creating group: ' + error.response?.data?.message || error.message)
     }
   })
 
@@ -29,21 +30,21 @@ const CreateGroup = () => {
   }
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Create New Group</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="w-92 rounded-lg mx-auto h-fit bg-white p-4 text-black">
+  
+      <form onSubmit={handleSubmit} className="space-y-2">
         <input
           type="text"
           value={groupName}
           onChange={(e) => setGroupName(e.target.value)}
           placeholder="Enter group name"
-          className="w-full p-2 border rounded"
+          className="w-full px-2 py-1 border rounded"
           required
         />
         <button
           type="submit"
           disabled={createGroupMutation.isPending}
-          className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+          className="bg-[#0a0a0a] rounded-lg px-3 my-1 py-1 text-white font-sm flex items-center gap-2 justify-center cursor-pointer"
         >
           {createGroupMutation.isPending ? 'Creating...' : 'Create Group'}
         </button>

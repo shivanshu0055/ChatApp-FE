@@ -3,6 +3,8 @@ import axios from 'axios'
 import { useAuthStore } from '../stores/authStore'
 import { useQuery } from '@tanstack/react-query'
 import GroupSearchBarCard from './GroupSearchBarCard'
+import { CiSearch } from 'react-icons/ci'
+import { motion, AnimatePresence } from 'framer-motion'
 
 const GroupSearchBar = () => {
   const token = useAuthStore((state) => state.token)
@@ -24,40 +26,54 @@ const GroupSearchBar = () => {
 
   return (
     <>
-      <div className='flex gap-4 w-fit mx-auto my-7'>
-        <input
-          placeholder='Search for groups'
-          type="text"
-          className='border rounded-4xl w-80 px-2 text-sm'
-          onChange={(e) => setQuery(e.target.value)}
-        />
-        <button
-          className='bg-black rounded-4xl text-white px-4 py-1'
-          onClick={() => {
-            if (!query?.trim()) return;
-            refetch()
-            setModal(true)
-          }}
-        >
-          Search
-        </button>
-      </div>
+      <div className='font-Geist flex gap-2 my-5 w-fit mx-auto bg-white rounded-2xl px-3 py-1.5'>
+                  <input placeholder='Search for groups ' type="text" className='w-80 px-2 py-0.5 text-sm bg-white/50 rounded-xl border-2 border-gray-300 outline-none text-black'  onChange={(e)=>setQuery(e.target.value)}/>
+                  <motion.button className='cursor-pointer' 
+                      whileHover={{ scale: 1.1, rotate: 10 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                      onClick={()=>{
+                      if (!query?.trim()) return;
+                      refetch()
+                      setModal(true)}
+                      }>
+                          <CiSearch className='text-2xl text-black'/>
+                      </motion.button>
+              </div>
+      <AnimatePresence>
       {modal && (
-        <div className='w-90 px-10 py-2 border mx-auto'>
-          {isFetching && <p>Loading...</p>}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          className="fixed backdrop-blur-md inset-0 bg-black/70 flex items-center justify-center z-50" 
+          onClick={() => setModal(false)}
+        >
+          <motion.div 
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.8, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full mx-4" 
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-semibold mb-4 text-black">Group Search Results</h3>
+            {isFetching && <p>Loading...</p>}
 
-          {isError && <p>Error fetching groups</p>}
+            {isError && <p>Error fetching groups</p>}
 
-          {isSuccess && data?.groups?.length === 0 && (
-            <p>No groups found</p>
-          )}
+            {isSuccess && data?.groups?.length === 0 && (
+              <p>No groups found</p>
+            )}
 
-          {isSuccess &&
-            data?.groups?.map((group, index) => (
-              <GroupSearchBarCard key={index} groupName={group.groupName} _id={group._id} />
-            ))}
-        </div>
+            {isSuccess &&
+              data?.groups?.map((group, index) => (
+                <GroupSearchBarCard key={index} groupName={group.groupName} _id={group._id} />
+              ))}
+          </motion.div>
+        </motion.div>
       )}
+      </AnimatePresence>
     </>
   )
 }

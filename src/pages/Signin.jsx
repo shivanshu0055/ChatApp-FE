@@ -56,7 +56,10 @@ const Signin = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] font-Geist text-white">
+    <div className="h-screen w-full text-white font-Geist bg-[#0a0a0a] flex justify-center items-center
+[background-image:radial-gradient(circle,_rgba(255,255,255,0.15)_1.5px,_transparent_1px)]
+[background-size:18px_18px]
+[background-position:0_0]">
       <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8 text-[#0a0a0a]">
         <h2 className="text-2xl font-semibold mb-6">
           Sign In

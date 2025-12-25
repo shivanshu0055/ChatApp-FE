@@ -3,6 +3,7 @@ import React from 'react'
 import axios from 'axios'
 import { useAuthStore } from '../stores/authStore'
 import GroupSearchBarCard from './GroupSearchBarCard'
+import { HashLoader } from 'react-spinners'
 
 const PublicGroupList = () => {
   const { token } = useAuthStore()
@@ -14,12 +15,17 @@ const PublicGroupList = () => {
     }).then(res => res.data.recentGroups)
   })
 
-  if (isLoading) return <div>Loading recent groups...</div>
-  if (isError) return <div>Error: {error.message}</div>
+  if(isLoading) return 
+    <div className="w-92 rounded-lg mx-auto h-105 bg-white p-2 flex justify-center items-center ">
+        <HashLoader size={20}/>
+    </div>
+
+    if(isError) return <div className="w-92 rounded-lg mx-auto h-105 bg-white p-2 flex justify-center items-center text-center text-black">
+        {error.message}
+    </div>
 
   return (
-    <div className="public-group-list">
-      <h3 className="text-center mb-4">Recent Public Groups</h3>
+    <div className="w-92 rounded-lg mx-auto h-105 bg-white p-2 text-black">
       {data && data.map(group => (
         <GroupSearchBarCard key={group._id} groupName={group.groupName} _id={group._id} />
       ))}

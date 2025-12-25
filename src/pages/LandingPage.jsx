@@ -12,7 +12,10 @@ const LandingPage = () => {
 
     return (
         <>
-        <div className='bg-[#0a0a0a] h-screen w-full font-Geist text-white'>
+        <div className="h-screen w-full text-white font-Geist bg-[#0a0a0a]
+[background-image:radial-gradient(circle,_rgba(255,255,255,0.15)_1.5px,_transparent_1px)]
+[background-size:18px_18px]
+[background-position:0_0]">
             <div className='px-5 py-4 flex justify-between'>
                 <div className='flex gap-3 items-center'>
                     <BsChatSquareQuoteFill className='text-3xl'/>
