@@ -48,13 +48,46 @@ const ChatPage = () => {
 
     newSocket.on('message-received', (messageData) => {
       console.log('New message received:', messageData)
-      // Invalidate and refetch messages
-      queryClient.invalidateQueries({ queryKey: ['messages', chatID] })
+      // Update messages cache directly
+      queryClient.setQueryData(['messages', chatID], (oldData) => {
+        if (!oldData) return oldData
+        
+        // Add new message to the last page (most recent)
+        const newPages = [...oldData.pages]
+        if (newPages.length > 0) {
+          const lastPage = { ...newPages[newPages.length - 1] }
+          lastPage.messages = [...lastPage.messages, messageData]
+          newPages[newPages.length - 1] = lastPage
+        }
+        
+        return {
+          ...oldData,
+          pages: newPages
+        }
+      })
     })
 
     newSocket.on('message-deleted', (data) => {
       console.log('Message deleted:', data)
-      queryClient.invalidateQueries({ queryKey: ['messages', chatID] })
+      // Update messages cache directly
+      queryClient.setQueryData(['messages', chatID], (oldData) => {
+        if (!oldData) return oldData
+        
+        // Update the deleted message in all pages
+        const newPages = oldData.pages.map(page => ({
+          ...page,
+          messages: page.messages.map(msg => 
+            msg._id === data.messageID 
+              ? { ...msg, content: 'This message is deleted' }
+              : msg
+          )
+        }))
+        
+        return {
+          ...oldData,
+          pages: newPages
+        }
+      })
     })
 
     return () => {
@@ -85,46 +118,108 @@ const ChatPage = () => {
 
   const deleteMessage = async (messageID) => {
     try {
+      // Optimistic update
+      queryClient.setQueryData(['messages', chatID], (oldData) => {
+        if (!oldData) return oldData
+        
+        const newPages = oldData.pages.map(page => ({
+          ...page,
+          messages: page.messages.map(msg => 
+            msg._id === messageID 
+              ? { ...msg, content: 'This message is deleted' }
+              : msg
+          )
+        }))
+        
+        return {
+          ...oldData,
+          pages: newPages
+        }
+      })
+
       await axios.post(`http://localhost:3000/api/message/deleteMessage/${messageID}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       })
 
       // Emit to socket
       socket.emit('delete-message', { chatID, messageID })
-
-      // Refetch messages
-      queryClient.invalidateQueries({ queryKey: ['messages', chatID] })
     } catch (err) {
       console.error('Error deleting message:', err)
+      // Revert on error
+      queryClient.invalidateQueries({ queryKey: ['messages', chatID] })
     }
   }
 
   const sendMessage = async () => {
     if (!messageInput.trim()) return
 
+    const tempMessage = {
+      _id: `temp_${Date.now()}`,
+      content: messageInput,
+      sender: { _id: userID, username: chatData?.participants?.find(p => p._id === userID)?.username || 'You' },
+      chatID,
+      createdAt: new Date().toISOString()
+    }
+
+    // Optimistic update
+    queryClient.setQueryData(['messages', chatID], (oldData) => {
+      if (!oldData) return oldData
+      
+      const newPages = [...oldData.pages]
+      if (newPages.length > 0) {
+        const lastPage = { ...newPages[newPages.length - 1] }
+        lastPage.messages = [...lastPage.messages, tempMessage]
+        newPages[newPages.length - 1] = lastPage
+      }
+      
+      return {
+        ...oldData,
+        pages: newPages
+      }
+    })
+
+    setMessageInput('')
+
     try {
       // Call API to save message
       const response = await axios.post('http://localhost:3000/api/message/sendMessage', {
         chatID,
-        content: messageInput
+        content: tempMessage.content
       }, {
         headers: { Authorization: `Bearer ${token}` }
+      })
+
+      // Replace temp message with real message
+      queryClient.setQueryData(['messages', chatID], (oldData) => {
+        if (!oldData) return oldData
+        
+        const newPages = oldData.pages.map(page => ({
+          ...page,
+          messages: page.messages.map(msg => 
+            msg._id === tempMessage._id 
+              ? response.data.message
+              : msg
+          )
+        }))
+        
+        return {
+          ...oldData,
+          pages: newPages
+        }
       })
 
       // Emit to socket
       socket.emit('new-message', {
         chatID,
-        content: messageInput,
-        sender: { username: response.data.message.sender.username },
+        content: response.data.message.content,
+        sender: { username: response.data.message.sender.username, _id: response.data.message.sender._id },
         _id: response.data.message._id,
         participants: chatData.participants.map(p => p._id)
       })
-
-      setMessageInput('')
-      // Refetch messages
-      queryClient.invalidateQueries({ queryKey: ['messages', chatID] })
     } catch (err) {
       console.error('Error sending message:', err)
+      // Revert on error
+      queryClient.invalidateQueries({ queryKey: ['messages', chatID] })
     }
   }
 

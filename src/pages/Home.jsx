@@ -36,9 +36,54 @@ const Home = () => {
 
     newSocket.on('notify-new-message', (data) => {
       console.log('New message notification:', data);
-      // Invalidate chat lists to update last messages
-      queryClient.invalidateQueries({ queryKey: ['chatList'] });
-      queryClient.invalidateQueries({ queryKey: ['groups'] });
+      // Update chat lists to show new last message
+      queryClient.setQueryData(['chatList'], (oldData) => {
+        if (!oldData) return oldData
+        
+        const updatedList = oldData.map(chat => {
+          if (chat._id === data.chatID) {
+            return {
+              ...chat,
+              lastMessage: {
+                _id: data._id,
+                content: data.content,
+                sender: data.sender
+              },
+              updatedAt: new Date().toISOString()
+            }
+          }
+          return chat
+        })
+        
+        // Sort by updatedAt to move the chat to top
+        updatedList.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+        
+        return updatedList
+      })
+      
+      queryClient.setQueryData(['groups'], (oldData) => {
+        if (!oldData) return oldData
+        
+        const updatedList = oldData.map(group => {
+          if (group._id === data.chatID) {
+            return {
+              ...group,
+              lastMessage: {
+                _id: data._id,
+                content: data.content,
+                sender: data.sender
+              },
+              updatedAt: new Date().toISOString()
+            }
+          }
+          return group
+        })
+        
+        // Sort by updatedAt to move the group to top
+        updatedList.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+        
+        return updatedList
+      })
     });
 
     return () => {
