@@ -20,10 +20,11 @@ const FriendList = () => {
         }
     })
 
-    if(isLoading) return 
+    if(isLoading) return (
     <div className="w-92 rounded-lg mx-auto h-105 bg-white p-2 flex justify-center items-center ">
-        <HashLoader size={20}/>
+        <HashLoader size={20} color="#000000" />
     </div>
+    )
 
     if(isError) return <div className="w-92 rounded-lg mx-auto h-105 bg-white p-2 flex justify-center items-center text-center text-black">
         {error.message}

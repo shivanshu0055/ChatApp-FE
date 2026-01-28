@@ -3,17 +3,26 @@ import { useParams } from 'react-router-dom'
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import { useAuthStore } from '../stores/authStore'
-import { io } from 'socket.io-client'
+import { MdVideoCall } from 'react-icons/md'
+import VideoCall from '../components/VideoCall'
+import IncomingCallPopup from '../components/IncomingCallPopup'
 
 const ChatPage = () => {
   const { chatID } = useParams()
-  const { token, userID } = useAuthStore()
+  const { userID } = useAuthStore()
+  const initSocket = useAuthStore(state => state.initSocket)
+  const getSocket = useAuthStore(state => state.getSocket)
+  const username = useAuthStore(state => state.username)
+  const activeCall = useAuthStore(state => state.activeCall)
+  const callState = useAuthStore(state => state.callState)
+  const setActiveCall = useAuthStore(state => state.setActiveCall)
   const scrollRef = useRef(null)
-  const [socket, setSocket] = useState(null)
   const [messageInput, setMessageInput] = useState('')
   const [hoveredMessageId, setHoveredMessageId] = useState(null)
   const queryClient = useQueryClient()
 
+  const token = useAuthStore(state => state.token)
+  
   const { data: chatData } = useQuery({
     queryKey: ['chat', chatID],
     queryFn: () => axios.get(`http://localhost:3000/api/chat/getChat/${chatID}`, {
@@ -35,18 +44,16 @@ const ChatPage = () => {
   const allMessages = data ? data.pages.slice().reverse().flatMap(page => page.messages) : []
 
   useEffect(() => {
-    const newSocket = io('http://localhost:3000', {
-      auth: { token }
-    })
+    // Initialize or get existing socket
+    const socket = initSocket()
+    
+    if (!socket) return
 
-    setSocket(newSocket)
+    // Join the chat room
+    socket.emit('join-chat', chatID)
+    console.log('Joined chat:', chatID)
 
-    newSocket.on('connected', () => {
-      console.log('Connected to socket')
-      newSocket.emit('join-chat', chatID)
-    })
-
-    newSocket.on('message-received', (messageData) => {
+    const handleMessageReceived = (messageData) => {
       console.log('New message received:', messageData)
       // Update messages cache directly
       queryClient.setQueryData(['messages', chatID], (oldData) => {
@@ -65,9 +72,9 @@ const ChatPage = () => {
           pages: newPages
         }
       })
-    })
+    }
 
-    newSocket.on('message-deleted', (data) => {
+    const handleMessageDeleted = (data) => {
       console.log('Message deleted:', data)
       // Update messages cache directly
       queryClient.setQueryData(['messages', chatID], (oldData) => {
@@ -88,12 +95,19 @@ const ChatPage = () => {
           pages: newPages
         }
       })
-    })
+    }
+
+    socket.on('message-received', handleMessageReceived)
+    socket.on('message-deleted', handleMessageDeleted)
 
     return () => {
-      newSocket.disconnect()
+      // Leave chat room and remove listeners
+      socket.emit('leave-chat', chatID)
+      socket.off('message-received', handleMessageReceived)
+      socket.off('message-deleted', handleMessageDeleted)
+      console.log('Left chat:', chatID)
     }
-  }, [chatID, token, queryClient])
+  }, [chatID, initSocket, queryClient])
 
   const handleScroll = () => {
     if (scrollRef.current.scrollTop === 0 && hasNextPage && !isFetchingNextPage) {
@@ -142,7 +156,10 @@ const ChatPage = () => {
       })
 
       // Emit to socket
-      socket.emit('delete-message', { chatID, messageID })
+      const socket = getSocket()
+      if (socket) {
+        socket.emit('delete-message', { chatID, messageID })
+      }
     } catch (err) {
       console.error('Error deleting message:', err)
       // Revert on error
@@ -209,18 +226,41 @@ const ChatPage = () => {
       })
 
       // Emit to socket
-      socket.emit('new-message', {
-        chatID,
-        content: response.data.message.content,
-        sender: { username: response.data.message.sender.username, _id: response.data.message.sender._id },
-        _id: response.data.message._id,
-        participants: chatData.participants.map(p => p._id)
-      })
+      const socket = getSocket()
+      if (socket) {
+        socket.emit('new-message', {
+          chatID,
+          content: response.data.message.content,
+          sender: { username: response.data.message.sender.username, _id: response.data.message.sender._id },
+          _id: response.data.message._id,
+          participants: chatData.participants.map(p => p._id)
+        })
+      }
     } catch (err) {
       console.error('Error sending message:', err)
       // Revert on error
       queryClient.invalidateQueries({ queryKey: ['messages', chatID] })
     }
+  }
+
+  const initiateCall = () => {
+    if (!chatData || chatData.isGroupChat) {
+      alert('Video calls are only available for direct messages')
+      return
+    }
+
+    const remoteUser = chatData.participants.find(p => p._id !== userID)
+    if (!remoteUser) {
+      alert('Could not find the other user')
+      return
+    }
+
+    setActiveCall({
+      chatID,
+      remoteUserID: remoteUser._id,
+      remoteUsername: remoteUser.username,
+      isInitiator: true
+    })
   }
 
   if (isLoading) return (
@@ -237,6 +277,19 @@ const ChatPage = () => {
 
   if (isError) return <div>Error: {error.message}</div>
 
+  // Show video call if in active call
+  if (callState === 'in-call' && activeCall && activeCall.chatID === chatID) {
+    return (
+      <VideoCall
+        chatID={activeCall.chatID}
+        remoteUserID={activeCall.remoteUserID}
+        remoteUsername={activeCall.remoteUsername}
+        isInitiator={activeCall.isInitiator}
+        initialOffer={activeCall.initialOffer}
+      />
+    )
+  }
+
   return (
   <div className='h-screen w-full text-white font-Geist bg-[#0a0a0a]
 [background-image:radial-gradient(circle,_rgba(255,255,255,0.15)_1.5px,_transparent_1px)]
@@ -245,29 +298,42 @@ const ChatPage = () => {
     <div className="h-screen flex flex-col w-[80%] mx-auto">
       
       {/* Fixed Header */}
-      <div className=" p-4 flex items-center gap-3 ">
-        <div className=" w-10 h-10 bg-white text-black  rounded-full flex items-center justify-center font-bold">
-          {chatData?.isGroupChat 
-            ? (chatData.groupName?.[0]?.toUpperCase() || 'G')
-            : (chatData?.participants?.find(p => p._id !== userID)?.username?.[0]?.toUpperCase() || 'U')
-          }
-        </div>
-        <div>
-          <h2 className="font-semibold text-lg">
+      <div className="p-4 flex items-center gap-3 justify-between">
+        <div className="flex items-center gap-3">
+          <div className=" w-10 h-10 bg-white text-black  rounded-full flex items-center justify-center font-bold">
             {chatData?.isGroupChat 
-              ? (chatData.groupName || 'Group Chat')
-              : (chatData?.participants?.find(p => p._id !== userID)?.username || 'User')
+              ? (chatData.groupName?.[0]?.toUpperCase() || 'G')
+              : (chatData?.participants?.find(p => p._id !== userID)?.username?.[0]?.toUpperCase() || 'U')
             }
-          </h2>
-          {chatData?.participants && (
-            <p className="text-xs text-gray-400">
-              {chatData.isGroupChat 
-                ? `${chatData.participants.length} participants` 
-                : 'Direct Message'
+          </div>
+          <div>
+            <h2 className="font-semibold text-lg">
+              {chatData?.isGroupChat 
+                ? (chatData.groupName || 'Group Chat')
+                : (chatData?.participants?.find(p => p._id !== userID)?.username || 'User')
               }
-            </p>
-          )}
+            </h2>
+            {chatData?.participants && (
+              <p className="text-xs text-gray-400">
+                {chatData.isGroupChat 
+                  ? `${chatData.participants.length} participants` 
+                  : 'Direct Message'
+                }
+              </p>
+            )}
+          </div>
         </div>
+        
+        {/* Video Call Button - Only for DMs */}
+        {chatData && !chatData.isGroupChat && (
+          <button
+            onClick={initiateCall}
+            className="cursor-pointer p-3 bg-white text-black hover:bg-gray-200 rounded-full transition-all shadow-lg hover:scale-110 border border-gray-300"
+            title="Start video call"
+          >
+            <MdVideoCall className="text-2xl" />
+          </button>
+        )}
       </div>
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 scrollbar-hide">
@@ -312,6 +378,9 @@ const ChatPage = () => {
         <button onClick={sendMessage} className="ml-2 p-2 bg-white text-black rounded">Send</button>
       </div>
     </div>
+    
+    {/* Incoming Call Popup */}
+    <IncomingCallPopup />
   </div>
 )
 }

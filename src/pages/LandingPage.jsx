@@ -47,7 +47,7 @@ const LandingPage = () => {
                 </div>
                 <div className='my-6'>
                     <div className='bg-white rounded-2xl px-4 py-2 text-black font-medium flex items-center gap-2 justify-center cursor-pointer w-fit mx-auto'>
-                        <Link to="/signin">Get Started ✨</Link>
+                        <Link to={isAuthenticated ? "/home" : "/signin"}>Get Started ✨</Link>
                     </div>
                 </div>
             </div>
